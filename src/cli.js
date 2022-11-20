@@ -17,6 +17,7 @@ import { generateTemplateData, renderTemplate } from './template';
 import {readConfigFile} from './Config';
 import SourceControl from './SourceControl';
 import Jira from './Jira';
+import git from "simple-git";
 
 /**
  * Parse command line arguments
@@ -67,10 +68,11 @@ async function runProgram() {
     gitPath = path.resolve(gitPath);
 
     const config = readConfigFile(gitPath);
+    config.gitPath = gitPath;
     const jira = new Jira(config);
     const source = new SourceControl(config);
 
-    const range = getRangeObject(config, options);
+    const range = await getRangeObject(config, options);
 
     // Release flag used, but no name passed
     if (options.release === true) {
@@ -182,9 +184,10 @@ export function parseRange(rangeStr) {
  * Construct the range object from the CLI arguments and config
  *
  * @param {Object} config - The config object provided by Config.getConfigForPath
+ * @param {Object} options - Command line arguments parsed in options object
  * @return {Object}
  */
-function getRangeObject(config, options) {
+async function getRangeObject(config, options) {
   const range = {};
   const defaultRange = (config.sourceControl && config.sourceControl.defaultRange) ? config.sourceControl.defaultRange : {};
 
@@ -203,9 +206,19 @@ function getRangeObject(config, options) {
     Object.assign(range, defaultRange);
   }
 
-  // if (!Object.keys(range).length){
-  //     throw new Error('No range defined for the changelog.');
-  // }
+  if (Object.keys(range).length < 2) {
+    const workspace = git(config.gitPath);
+    await workspace.tags((e, tags) => {
+      if (tags.all.length > 1) {
+        range.from = tags.all[tags.all.length - 2]
+        range.to = tags.all[tags.all.length - 1]
+      }
+    })
+  }
+
+  if (!Object.keys(range).length){
+      throw new Error('No range defined for the changelog.');
+  }
 
   // Ensure symmetric is explicitly set
   range.symmetric = !!range.symmetric;

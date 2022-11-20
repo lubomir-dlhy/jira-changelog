@@ -50,8 +50,23 @@ export default class SourceControl {
    *
    * @return {Promsie} Resolves to a list of top-level commit objects
    */
-  getCommitLogs(workspaceDir, range) {
+  async getCommitLogs(workspaceDir, range) {
     const workspace = git(workspaceDir);
+    if (this.slack.isEnabled()) {
+      await this.slack.getSlackUsers()
+    }
+
+    if (Object.keys(range).length < 2) {
+      await workspace.tags((e, tags) => {
+        console.log(tags.length)
+        if (tags.all.length > 1) {
+          range.from = tags.all[tags.all.length - 2]
+          range.to = tags.all[tags.all.length - 1]
+        } else {
+          throw new Error('No range defined for the changelog.');
+        }
+      })
+    }
 
     return new Promise((resolve, reject) => {
 

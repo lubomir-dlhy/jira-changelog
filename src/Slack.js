@@ -39,7 +39,8 @@ export default class Slack {
   api(endpoint, method='GET', body=undefined) {
     const headers = {};
     const cachable = (method.toUpperCase() == 'GET');
-    const url = `${API_ROOT}/${endpoint}?token=${this.config.slack.apiKey}`;
+    headers['Authorization'] = `Bearer ${this.config.slack.apiKey}`
+    const url = `${API_ROOT}/${endpoint}`;
 
     if (!this.isEnabled()) {
       return Promise.reject('The slack API is not configured.');

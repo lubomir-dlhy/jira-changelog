@@ -10,7 +10,8 @@ import 'source-map-support/register';
 import program from 'commander';
 import path from 'path';
 import Slack from './Slack';
-import { AllHtmlEntities } from 'html-entities';
+import { decodeEntity } from 'html-entities';
+import fs from "fs";
 
 import { generateTemplateData, renderTemplate } from './template';
 import {readConfigFile} from './Config';
@@ -67,17 +68,18 @@ async function runProgram() {
     const jira = new Jira(config);
     const source = new SourceControl(config);
 
+    const range = getRangeObject(config);
+
     // Release flag used, but no name passed
     if (program.release === true) {
       if (typeof config.jira.generateReleaseVersionName !== 'function') {
         console.log("You need to define the jira.generateReleaseVersionName function in your config, if you're not going to pass the release version name in the command.")
         return;
       }
-      program.release = await config.jira.generateReleaseVersionName();
+      program.release = await config.jira.generateReleaseVersionName(range);
     }
 
     // Get logs
-    const range = getRangeObject(config);
     const commitLogs = await source.getCommitLogs(gitPath, range);
     const changelog = await jira.generate(commitLogs, program.release);
 
@@ -86,13 +88,22 @@ async function runProgram() {
     const changelogMessage = renderTemplate(config, tmplData);
 
     // Output to console
-    const entitles = new AllHtmlEntities();
-    console.log(entitles.decode(changelogMessage));
+    console.log(decodeEntity(changelogMessage));
+
+    // Save to file
+    if (config.save) {
+      const filepath = path.join(process.cwd(), 'changelog')
+      if (!fs.existsSync(filepath)){
+        await fs.mkdirSync('changelog')
+      }
+      await fs.writeFileSync(path.join(filepath, `changelog-${program.release || Date.now()}.md`), decodeEntity(changelogMessage))
+    }
 
     // Post to slack
     if (program.slack) {
       await postToSlack(config, tmplData, changelogMessage);
     }
+
   } catch(e) {
     console.error(e.stack || e);
     process.exit(1);
@@ -190,9 +201,9 @@ function getRangeObject(config) {
     Object.assign(range, defaultRange);
   }
 
-  if (!Object.keys(range).length){
-      throw new Error('No range defined for the changelog.');
-  }
+  // if (!Object.keys(range).length){
+  //     throw new Error('No range defined for the changelog.');
+  // }
 
   // Ensure symmetric is explicitly set
   range.symmetric = !!range.symmetric;

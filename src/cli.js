@@ -57,6 +57,8 @@ async function runProgram() {
   try {
     commandLineArgs();
 
+    const options = program.opts()
+
     // Determine the git workspace path
     let gitPath = process.cwd();
     if (program.args.length) {
@@ -68,20 +70,20 @@ async function runProgram() {
     const jira = new Jira(config);
     const source = new SourceControl(config);
 
-    const range = getRangeObject(config);
+    const range = getRangeObject(config, options);
 
     // Release flag used, but no name passed
-    if (program.release === true) {
+    if (options.release === true) {
       if (typeof config.jira.generateReleaseVersionName !== 'function') {
         console.log("You need to define the jira.generateReleaseVersionName function in your config, if you're not going to pass the release version name in the command.")
         return;
       }
-      program.release = await config.jira.generateReleaseVersionName(range);
+      options.release = await config.jira.generateReleaseVersionName(range);
     }
 
     // Get logs
     const commitLogs = await source.getCommitLogs(gitPath, range);
-    const changelog = await jira.generate(commitLogs, program.release);
+    const changelog = await jira.generate(commitLogs, options.release);
 
     // Render template
     const tmplData = await generateTemplateData(config, changelog, jira.releaseVersions);
@@ -96,11 +98,11 @@ async function runProgram() {
       if (!fs.existsSync(filepath)){
         await fs.mkdirSync('changelog')
       }
-      await fs.writeFileSync(path.join(filepath, `changelog-${program.release || Date.now()}.md`), decodeEntity(changelogMessage))
+      await fs.writeFileSync(path.join(filepath, `changelog-${options.release || Date.now()}.md`), decodeEntity(changelogMessage))
     }
 
     // Post to slack
-    if (program.slack) {
+    if (options.slack) {
       await postToSlack(config, tmplData, changelogMessage);
     }
 
@@ -182,17 +184,17 @@ export function parseRange(rangeStr) {
  * @param {Object} config - The config object provided by Config.getConfigForPath
  * @return {Object}
  */
-function getRangeObject(config) {
+function getRangeObject(config, options) {
   const range = {};
   const defaultRange = (config.sourceControl && config.sourceControl.defaultRange) ? config.sourceControl.defaultRange : {};
 
-  if (program.range && program.range.from) {
-    Object.assign(range, program.range);
+  if (options.range && options.range.from) {
+    Object.assign(range, options.range);
   }
-  if (program.dateRange && program.dateRange.from) {
-    range.after = program.dateRange.from;
-    if (program.dateRange.to) {
-      range.before = program.dateRange.to;
+  if (options.dateRange && options.dateRange.from) {
+    range.after = options.dateRange.from;
+    if (options.dateRange.to) {
+      range.before = options.dateRange.to;
     }
   }
 

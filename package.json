@@ -34,7 +34,7 @@
 		"html-entities": "2.4.0",
 		"jira-client": "8.2.2",
 		"lodash": "4.17.21",
-		"node-fetch": "3.3.2",
+		"node-fetch": "2.7.0",
 		"promise-throttle": "1.1.2",
 		"regenerator-runtime": "0.14.0",
 		"simple-git": "3.19.1",

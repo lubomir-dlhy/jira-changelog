@@ -193,12 +193,19 @@ async function getRangeObject(config, options) {
 
 	if (Object.keys(range).length < 2) {
 		const workspace = git(config.gitPath)
-		await workspace.tags((e, tags) => {
-			if (tags.all.length > 1) {
-				range.from = tags.all[tags.all.length - 2]
-				range.to = tags.all[tags.all.length - 1]
-			}
-		})
+
+		const { all: allTags } = await workspace.tags()
+
+		if (Object.keys(range).length === 1) {
+			const rangeFromTagIndex = range.from ? allTags.findIndex((item) => item === range.from) : null
+			const rangeToTagIndex = range.to ? allTags.findIndex((item) => item === range.to) : null
+
+			range.from = range.from ? range.from : allTags[rangeToTagIndex - 1]
+			range.to = range.to ? range.to : allTags[rangeFromTagIndex + 1]
+		} else {
+			range.from = allTags[allTags.length - 2]
+			range.to = allTags[allTags.length - 1]
+		}
 	}
 
 	if (!Object.keys(range).length) {

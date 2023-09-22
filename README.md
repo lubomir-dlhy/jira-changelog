@@ -1,5 +1,4 @@
-Jira Changelog Generator
-------------------------
+## Jira Changelog Generator
 
 Generates a changelog of Jira issues from your git history and, optionally, attach all issues to a release.
 
@@ -32,13 +31,11 @@ Pending Approval
  ~ None. Yay! ~
 ```
 
-
 You can also have it automatically post to slack!
 
 ## How it works
 
 The script looks for Jira issue keys, surrounded by square brackets (i.e. `[DEV-123]`), in the git commit logs. When it finds one, it associates that Jira issue ticket with that commit and adds it to the changelog.
-
 
 ## Installation
 
@@ -58,14 +55,14 @@ Here's a simple example with sample Jira API values:
 
 ```javascript
 module.exports = {
-  jira: {
-    api: {
-      host: 'myapp.atlassian.net',
-      email: 'jirauser@myapp.com',
-      token: 'qWoJBdlEp6pJy15fc9tGpsOOR2L5i35v',
-      options: {} 
-    },
-  }
+	jira: {
+		api: {
+			host: 'myapp.atlassian.net',
+			email: 'jirauser@myapp.com',
+			token: 'qWoJBdlEp6pJy15fc9tGpsOOR2L5i35v',
+			options: {}
+		}
+	}
 }
 ```
 
@@ -90,7 +87,6 @@ Alternatively, you can specify a range (using [git commit range](https://git-scm
 ```bash
 jira-changelog --range origin/prod...origin/stage
 ```
-
 
 ## Releases
 
@@ -121,8 +117,8 @@ module.exports = {
 }
 ```
 
- * Add your API token to `slack.apiKey`.
- * `slack.channel` is the channel you want the script to send the changelog to.
+-   Add your API token to `slack.apiKey`.
+-   `slack.channel` is the channel you want the script to send the changelog to.
 
 Then simply add the `--slack` flag to the command:
 
@@ -131,6 +127,7 @@ jira-changelog --slack
 ```
 
 ## API
+
 The code used to generate the changelogs can also be used as modules in your node app.
 See the module source for documentation.
 
@@ -141,40 +138,40 @@ npm install -S jira-changelog
 ```
 
 ```javascript
-const Config = require('jira-changelog').Config;
-const SourceControl = require('jira-changelog').SourceControl;
-const Jira = require('jira-changelog').Jira;
+const Config = require('jira-changelog').Config
+const SourceControl = require('jira-changelog').SourceControl
+const Jira = require('jira-changelog').Jira
 
 const gitRepoPath = '/home/user/source/'
 
 // Get configuration
-const confPath = `${gitRepoPath}/changelog.config.js`;
-const config = Config.readConfigFile('/Users/jeremygillick/Source/app/changelog.config.js');
+const confPath = `${gitRepoPath}/changelog.config.js`
+const config = Config.readConfigFile('/Users/jeremygillick/Source/app/changelog.config.js')
 
 // Get commits for a range
-const source = new SourceControl(config);
+const source = new SourceControl(config)
 const range = {
-  from: "origin/prod",
-  to: "origin/master"
-};
+	from: 'origin/prod',
+	to: 'origin/master'
+}
 source.getCommitLogs(gitRepoPath, range).then((commitLogs) => {
-
-  // Associate git commits with jira tickets and output changelog object
-  const jira = new Jira(config);
-  jira.generate(commitLogs).then((changelog) => {
-    console.log(changelog);
-  });
-
-});
+	// Associate git commits with jira tickets and output changelog object
+	const jira = new Jira(config)
+	jira.generate(commitLogs).then((changelog) => {
+		console.log(changelog)
+	})
+})
 ```
 
 ## Tips & Tricks
 
 ### Change the output
+
 The output of the changelog is controlled by an [ejs](http://ejs.co/) template defined in your `changelog.config.js` file. You can see the default template, here:
 https://github.com/jgillick/jira-changelog/blob/master/changelog.config.js#L95-L136
 
 The data sent to the template looks like this:
+
 ```
 {
   jira: {
@@ -198,6 +195,7 @@ The data sent to the template looks like this:
 The template should output data only, not perform data transformations. For that, define the `transformData` or `transformForSlack` functions.
 
 ### Custom data transformation
+
 What if you want to edit the git commit log messages to automatically add links around the ticket numbers? You can do that, and more, by defining the `transformData` function inside your `changelog.config.js` file. This function can transform all the template data, before it is sent to the template.
 
 For example, adding a link around all ticket numbers in the git logs would look something like this (overly simplistic, for example only):

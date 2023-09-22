@@ -5,28 +5,27 @@
  * these returned settings will overwrite the defaults.
  */
 
-import fs from 'fs';
-import path from 'path';
-import program from 'commander';
+import fs from 'fs'
+import path from 'path'
+import program from 'commander'
 
 /**
  * Default config object
  */
-import defaultConfig from '../changelog.config.js';
-
+import defaultConfig from '../changelog.config.js'
 
 /**
  * Name of the local config files.
  * Put this file in the directory where you call the jira-changelog command.
  */
-export const CONF_FILENAME = 'changelog.config.js';
+export const CONF_FILENAME = 'changelog.config.js'
 
 /**
  * Return the default config object.
  * @return {Object}
  */
 export function getDefaultConfig() {
-  return defaultConfig;
+	return defaultConfig
 }
 
 /**
@@ -35,11 +34,11 @@ export function getDefaultConfig() {
  * @return {String}
  */
 export function configFilePath(cwd) {
-  // Passed in on the command line
-  if (program.config) {
-    return path.resolve(program.config);
-  }
-  return path.join(cwd, CONF_FILENAME);
+	// Passed in on the command line
+	if (program.config) {
+		return path.resolve(program.config)
+	}
+	return path.join(cwd, CONF_FILENAME)
 }
 
 /**
@@ -49,23 +48,23 @@ export function configFilePath(cwd) {
  * @return {Object} Configuration object.
  */
 export function readConfigFile(cwd) {
-  let localConf = {};
-  const configPath = configFilePath(cwd);
+	let localConf = {}
+	const configPath = configFilePath(cwd)
 
-  try {
-    // Check if file exists
-    fs.accessSync(configPath);
-    localConf = require(configPath);
-  } catch(e) {
-    if (e instanceof SyntaxError) {
-      console.log('Error reading changelog.config.js:');
-      console.log(e.stack);
-      console.log(e.message);
-    }
-  }
+	try {
+		// Check if file exists
+		fs.accessSync(configPath)
+		localConf = require(configPath)
+	} catch (e) {
+		if (e instanceof SyntaxError) {
+			console.log('Error reading changelog.config.js:')
+			console.log(e.stack)
+			console.log(e.message)
+		}
+	}
 
-  localConf = defaultValues(localConf, defaultConfig);
-  return localConf;
+	localConf = defaultValues(localConf, defaultConfig)
+	return localConf
 }
 
 /**
@@ -76,16 +75,15 @@ export function readConfigFile(cwd) {
  * @return {Object}
  */
 export function defaultValues(config, defaults) {
-  const localConf = { ...config };
+	const localConf = { ...config }
 
-  Object.entries(defaults).forEach(([key, defVal]) => {
-    if (typeof defVal === 'object' && !Array.isArray(defVal)) {
-      localConf[key] = Object.assign({}, defVal, localConf[key] || {});
-    }
-    else if (typeof localConf[key] == 'undefined') {
-      localConf[key] = defVal;
-    }
-  });
+	Object.entries(defaults).forEach(([key, defVal]) => {
+		if (typeof defVal === 'object' && !Array.isArray(defVal)) {
+			localConf[key] = Object.assign({}, defVal, localConf[key] || {})
+		} else if (typeof localConf[key] == 'undefined') {
+			localConf[key] = defVal
+		}
+	})
 
-  return localConf;
+	return localConf
 }

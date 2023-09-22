@@ -1,7 +1,5 @@
-
-import ejs from 'ejs';
-import _ from 'lodash';
-
+import ejs from 'ejs'
+import _ from 'lodash'
 
 /**
  * Filter revert commits out of a commit log list, if the original commit is present.
@@ -33,28 +31,28 @@ import _ from 'lodash';
  * @return {Object} containing: reverted, current
  */
 export function filterRevertedCommits(logs) {
-  // Convenient commit lookup
-  const commitHash = {};
-  logs.forEach(l => commitHash[l.revision] = l);
+	// Convenient commit lookup
+	const commitHash = {}
+	logs.forEach((l) => (commitHash[l.revision] = l))
 
-  // Track reverted commits, and only keep one of the commits (orig or reverter)
-  const reduced = logs.reduce((acc, log) => {
-    if (log.reverted) {
-      // If the commit we're reverting is in the list, remove the revert commit
-      const revertedCommit = commitHash[log.reverted]
-      if (revertedCommit) {
-        revertedCommit.revertedBy = log.revision;
-        acc.add(revertedCommit);
-      } else {
-        acc.add(log);
-      }
-    } else {
-      acc.add(log);
-    }
-    return acc;
-  }, new Set());
+	// Track reverted commits, and only keep one of the commits (orig or reverter)
+	const reduced = logs.reduce((acc, log) => {
+		if (log.reverted) {
+			// If the commit we're reverting is in the list, remove the revert commit
+			const revertedCommit = commitHash[log.reverted]
+			if (revertedCommit) {
+				revertedCommit.revertedBy = log.revision
+				acc.add(revertedCommit)
+			} else {
+				acc.add(log)
+			}
+		} else {
+			acc.add(log)
+		}
+		return acc
+	}, new Set())
 
-  return Array.from(reduced);
+	return Array.from(reduced)
 }
 
 /**
@@ -64,16 +62,16 @@ export function filterRevertedCommits(logs) {
  * @return {Array}
  */
 export function decorateTicketReverts(tickets) {
-  tickets.forEach((ticket) => {
-    if (!ticket.commits || !ticket.commits.length) {
-      ticket.reverted = null;
-      return;
-    }
-    const commits = _.sortBy(ticket.commits, commit => commit.date).reverse();
-    const lastCommit = commits[0];
-    ticket.reverted = lastCommit.reverted || lastCommit.revertedBy;
-  });
-  return tickets;
+	tickets.forEach((ticket) => {
+		if (!ticket.commits || !ticket.commits.length) {
+			ticket.reverted = null
+			return
+		}
+		const commits = _.sortBy(ticket.commits, (commit) => commit.date).reverse()
+		const lastCommit = commits[0]
+		ticket.reverted = lastCommit.reverted || lastCommit.revertedBy
+	})
+	return tickets
 }
 
 /**
@@ -83,24 +81,24 @@ export function decorateTicketReverts(tickets) {
  * @return {Object}
  */
 export function getTicketReporters(tickets) {
-  const reporters = {};
+	const reporters = {}
 
-  tickets.forEach((ticket) => {
-    const { email, displayName } = ticket.fields.reporter || [];
-    if (!reporters[email]) {
-      reporters[email] = {
-        email,
-        name: displayName,
-        slackUser: ticket.slackUser,
-        tickets: [ticket]
-      };
-    } else {
-      reporters[email].tickets.push(ticket);
-    }
-  });
+	tickets.forEach((ticket) => {
+		const { email, displayName } = ticket.fields.reporter || []
+		if (!reporters[email]) {
+			reporters[email] = {
+				email,
+				name: displayName,
+				slackUser: ticket.slackUser,
+				tickets: [ticket]
+			}
+		} else {
+			reporters[email].tickets.push(ticket)
+		}
+	})
 
-  // Sort list by name
-  return _.sortBy(Object.values(reporters), item => item.name);
+	// Sort list by name
+	return _.sortBy(Object.values(reporters), (item) => item.name)
 }
 
 /**
@@ -111,33 +109,33 @@ export function getTicketReporters(tickets) {
  * @param {Array}
  */
 export function groupTicketsByStatus(config, tickets) {
-  let { approvalStatus } = config.jira;
-  if (!approvalStatus) {
-    return {
-      approved: [],
-      pending: tickets,
-    };
-  }
+	let { approvalStatus } = config.jira
+	if (!approvalStatus) {
+		return {
+			approved: [],
+			pending: tickets
+		}
+	}
 
-  if (!Array.isArray(approvalStatus)) {
-    approvalStatus = [approvalStatus];
-  }
+	if (!Array.isArray(approvalStatus)) {
+		approvalStatus = [approvalStatus]
+	}
 
-  const out = {
-    approved: [],
-    pending: [],
-  };
-  const statusMatch = approvalStatus.map(s => s.toLowerCase());
-  tickets.forEach((ticket) => {
-    const name = ticket.fields.status.name.toLowerCase();
-    if (statusMatch.includes(name)) {
-      out.approved.push(ticket);
-    } else {
-      out.pending.push(ticket);
-    }
-  });
+	const out = {
+		approved: [],
+		pending: []
+	}
+	const statusMatch = approvalStatus.map((s) => s.toLowerCase())
+	tickets.forEach((ticket) => {
+		const name = ticket.fields.status.name.toLowerCase()
+		if (statusMatch.includes(name)) {
+			out.approved.push(ticket)
+		} else {
+			out.pending.push(ticket)
+		}
+	})
 
-  return out;
+	return out
 }
 
 /**
@@ -165,43 +163,43 @@ export function groupTicketsByStatus(config, tickets) {
  * @return {Promise} Resolves to an object with filtered commit/ticket data
  */
 export function transformCommitLogs(config, logs) {
-  // Filter reverts
-  const reducedLogs = filterRevertedCommits(logs);
+	// Filter reverts
+	const reducedLogs = filterRevertedCommits(logs)
 
-  // Organize logs by jira ticket keys
-  const ticketHash = reducedLogs.reduce((all, log) => {
-    log.tickets.forEach((ticket) => {
-      all[ticket.key] = all[ticket.key] || ticket;
-      all[ticket.key].commits = all[ticket.key].commits || [];
-      all[ticket.key].commits.push(log);
-    });
-    return all;
-  }, {});
+	// Organize logs by jira ticket keys
+	const ticketHash = reducedLogs.reduce((all, log) => {
+		log.tickets.forEach((ticket) => {
+			all[ticket.key] = all[ticket.key] || ticket
+			all[ticket.key].commits = all[ticket.key].commits || []
+			all[ticket.key].commits.push(log)
+		})
+		return all
+	}, {})
 
-  // Mark tickets as reverted
-  decorateTicketReverts(Object.values(ticketHash));
+	// Mark tickets as reverted
+	decorateTicketReverts(Object.values(ticketHash))
 
-  // Sort tickets by type name and get pending tickets
-  let ticketList = _.sortBy(Object.values(ticketHash), ticket => ticket.fields.issuetype.name);
-  let tixByStatus = groupTicketsByStatus(config, ticketList);
-  const pendingByOwner = getTicketReporters(tixByStatus.pending);
+	// Sort tickets by type name and get pending tickets
+	let ticketList = _.sortBy(Object.values(ticketHash), (ticket) => ticket.fields.issuetype.name)
+	let tixByStatus = groupTicketsByStatus(config, ticketList)
+	const pendingByOwner = getTicketReporters(tixByStatus.pending)
 
-  // Output filtered data
-  return {
-    commits: {
-      all: reducedLogs,
-      tickets: reducedLogs.filter(commit => commit.tickets.length),
-      noTickets: reducedLogs.filter(commit => !commit.tickets.length),
-      reverted: reducedLogs.filter(l => l.reverted || l.revertedBy),
-    },
-    tickets: {
-      pendingByOwner,
-      all: ticketList,
-      approved: tixByStatus.approved,
-      pending: tixByStatus.pending,
-      reverted: ticketList.filter(t => t.reverted),
-    }
-  }
+	// Output filtered data
+	return {
+		commits: {
+			all: reducedLogs,
+			tickets: reducedLogs.filter((commit) => commit.tickets.length),
+			noTickets: reducedLogs.filter((commit) => !commit.tickets.length),
+			reverted: reducedLogs.filter((l) => l.reverted || l.revertedBy)
+		},
+		tickets: {
+			pendingByOwner,
+			all: ticketList,
+			approved: tixByStatus.approved,
+			pending: tixByStatus.pending,
+			reverted: ticketList.filter((t) => t.reverted)
+		}
+	}
 }
 
 /**
@@ -214,19 +212,19 @@ export function transformCommitLogs(config, logs) {
  * @return {String}
  */
 export async function generateTemplateData(config, changelog, releaseVersions) {
-  let data = await transformCommitLogs(config, changelog);
-  if (typeof config.transformData == 'function') {
-    data = await Promise.resolve(config.transformData(data));
-  }
-  data.jira = {
-    baseUrl: config.jira.baseUrl,
-    releaseVersions: releaseVersions,
-  };
-  data.options = {
-    hideEmptyBlocks: !!config.hideEmptyBlocks,
-  };
+	let data = await transformCommitLogs(config, changelog)
+	if (typeof config.transformData == 'function') {
+		data = await Promise.resolve(config.transformData(data))
+	}
+	data.jira = {
+		baseUrl: config.jira.baseUrl,
+		releaseVersions: releaseVersions
+	}
+	data.options = {
+		hideEmptyBlocks: !!config.hideEmptyBlocks
+	}
 
-  return data;
+	return data
 }
 
 /**
@@ -238,5 +236,5 @@ export async function generateTemplateData(config, changelog, releaseVersions) {
  * @return {String}
  */
 export function renderTemplate(config, data) {
-  return ejs.render(config.template, data);
+	return ejs.render(config.template, data)
 }

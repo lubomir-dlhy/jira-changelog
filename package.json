@@ -1,43 +1,43 @@
 {
-  "name": "@goodrequest/jira-changelog",
-  "version": "2.2.2",
-  "description": "Generates a changelog by matching git commits to Jira tickets.",
-  "repository": "https://github.com/jgillick/jira-changelog",
-  "main": "dist/scripts/index.js",
-  "bin": {
-    "jira-changelog": "dist/scripts/cli.js"
-  },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "babel src --out-dir dist/scripts -s; cp changelog.config.js ./dist/",
-    "clean": "rm -r dist || true",
-    "test": "npm run build && jest dist",
-    "prepare": "npm run build",
-    "cli": "npm run build && node dist/scripts/cli.js"
-  },
-  "author": "Jeremy Gillick",
-  "license": "MIT",
-  "devDependencies": {
-    "@babel/cli": "7.19.3",
-    "@babel/core": "7.20.2",
-    "@babel/preset-env": "7.20.2",
-    "jest": "29.3.1"
-  },
-  "dependencies": {
-    "commander": "9.4.1",
-    "core-js": "3.26.1",
-    "ejs": "3.1.8",
-    "form-urlencoded": "6.1.0",
-    "haikunator": "^2.1.2",
-    "html-entities": "2.3.3",
-    "jira-client": "8.2.2",
-    "lodash": "4.17.21",
-    "node-fetch": "2.6.7",
-    "promise-throttle": "1.1.2",
-    "regenerator-runtime": "0.13.10",
-    "simple-git": "3.15.0",
-    "source-map-support": "0.5.21"
-  }
+	"name": "@goodrequest/jira-changelog",
+	"version": "2.2.2",
+	"description": "Generates a changelog by matching git commits to Jira tickets.",
+	"repository": "https://github.com/jgillick/jira-changelog",
+	"main": "dist/scripts/index.js",
+	"bin": {
+		"jira-changelog": "dist/scripts/cli.js"
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "babel src --out-dir dist/scripts -s; cp changelog.config.js ./dist/",
+		"clean": "rm -r dist || true",
+		"test": "npm run build && jest dist",
+		"prepare": "npm run build",
+		"cli": "npm run build && node dist/scripts/cli.js"
+	},
+	"author": "Jeremy Gillick",
+	"license": "MIT",
+	"devDependencies": {
+		"@babel/cli": "7.19.3",
+		"@babel/core": "7.20.2",
+		"@babel/preset-env": "7.20.2",
+		"jest": "29.3.1"
+	},
+	"dependencies": {
+		"commander": "9.4.1",
+		"core-js": "3.26.1",
+		"ejs": "3.1.8",
+		"form-urlencoded": "6.1.0",
+		"haikunator": "^2.1.2",
+		"html-entities": "2.3.3",
+		"jira-client": "8.2.2",
+		"lodash": "4.17.21",
+		"node-fetch": "2.6.7",
+		"promise-throttle": "1.1.2",
+		"regenerator-runtime": "0.13.10",
+		"simple-git": "3.15.0",
+		"source-map-support": "0.5.21"
+	}
 }

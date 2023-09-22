@@ -1,110 +1,105 @@
 var Haikunator = require('haikunator')
 
 module.exports = {
+	// Jira integration
+	jira: {
+		// API
+		api: {
+			// Root host of your JIRA installation without protocol.
+			// (i.e 'yourapp.atlassian.net')
+			host: undefined,
+			// Email address of the user to login with
+			email: undefined,
+			// Auth token of the user to login with
+			// https://confluence.atlassian.com/cloud/api-tokens-938839638.html
+			token: undefined,
+			// If you need to set some jira-client option use this object.
+			// Check jira-client docs for available options: https://jira-node.github.io/typedef/index.html#static-typedef-JiraApiOptions
+			options: {}
+		},
 
-  // Jira integration
-  jira: {
+		// Jira base web URL
+		// Set to the base URL for your Jira account
+		baseUrl: 'https://atlassian.net',
 
-    // API
-    api: {
-      // Root host of your JIRA installation without protocol.
-      // (i.e 'yourapp.atlassian.net')
-      host: undefined,
-      // Email address of the user to login with
-      email: undefined,
-      // Auth token of the user to login with
-      // https://confluence.atlassian.com/cloud/api-tokens-938839638.html
-      token: undefined,
-      // If you need to set some jira-client option use this object. 
-      // Check jira-client docs for available options: https://jira-node.github.io/typedef/index.html#static-typedef-JiraApiOptions
-      options: {},
-    },
+		// Regex used to match the issue ticket key
+		// Use capture group one to isolate the key text within surrounding characters (if needed).
+		ticketIDPattern: /\[([A-Z]+\-[0-9]+)\]/i,
 
-    // Jira base web URL
-    // Set to the base URL for your Jira account
-    baseUrl: 'https://atlassian.net',
+		// Status names that mean the ticket is approved.
+		approvalStatus: ['Done', 'Closed', 'Accepted'],
 
-    // Regex used to match the issue ticket key
-    // Use capture group one to isolate the key text within surrounding characters (if needed).
-    ticketIDPattern: /\[([A-Z]+\-[0-9]+)\]/i,
+		// Tickets to exclude from the changelog, by type name
+		excludeIssueTypes: ['Sub-task', 'Story Bug'],
 
-    // Status names that mean the ticket is approved.
-    approvalStatus: ['Done', 'Closed', 'Accepted'],
+		// Tickets to include in changelog, by type name.
+		// If this is defined, `excludeIssueTypes` is ignored.
+		includeIssueTypes: [],
 
-    // Tickets to exclude from the changelog, by type name
-    excludeIssueTypes: ['Sub-task', 'Story Bug'],
+		// Get the release version name to use when using `--release` without a value.
+		// Returns a Promise
+		generateReleaseVersionName: function () {
+			const haikunator = new Haikunator()
+			return Promise.resolve(haikunator.haikunate())
+		}
+	},
 
-    // Tickets to include in changelog, by type name.
-    // If this is defined, `excludeIssueTypes` is ignored.
-    includeIssueTypes: [],
+	// Slack API integration
+	slack: {
+		// API key string
+		apiKey: undefined,
 
-    // Get the release version name to use when using `--release` without a value.
-    // Returns a Promise
-    generateReleaseVersionName: function() {
-      const haikunator = new Haikunator();
-      return Promise.resolve(haikunator.haikunate());
-    }
-  },
+		// The channel that the changelog will be posted in, when you use the `--slack` flag.
+		// This can be a channel string ('#mychannel`) or a channel ID.
+		channel: undefined,
 
-  // Slack API integration
-  slack: {
+		// The name to give the slack bot user, when posting the changelog
+		username: 'Changelog Bot',
 
-    // API key string
-    apiKey: undefined,
+		// Emoji to use for the bot icon.
+		// Cannot be used at the same time as `icon_url`
+		icon_emoji: ':clipboard:',
 
-    // The channel that the changelog will be posted in, when you use the `--slack` flag.
-    // This can be a channel string ('#mychannel`) or a channel ID.
-    channel: undefined,
+		// URL to an image to use as the icon for the bot.
+		// Cannot be used at the same time as `icon_emoji`
+		icon_url: undefined
+	},
 
-    // The name to give the slack bot user, when posting the changelog
-    username: "Changelog Bot",
+	// Github settings
+	sourceControl: {
+		// Default range for commits.
+		// This can include from/to git commit references
+		// and or after/before datestamps.
+		defaultRange: {
+			from: 'origin/prod',
+			to: 'origin/stage',
 
-    // Emoji to use for the bot icon.
-    // Cannot be used at the same time as `icon_url`
-    icon_emoji: ":clipboard:",
+			// symmetric='...'
+			// non-symmetric='..'
+			// https://matthew-brett.github.io/pydagogue/git_diff_dots.html
+			symmetric: false
+		}
+	},
 
-    // URL to an image to use as the icon for the bot.
-    // Cannot be used at the same time as `icon_emoji`
-    icon_url: undefined
-  },
+	// Possible to hide "~ None ~" blocks in template if set to true
+	hideEmptyBlocks: false,
 
-  // Github settings
-  sourceControl: {
+	// Transforms the basic changelog data before it goes to the template.
+	//  data - The changelog data.
+	transformData: function (data) {
+		return Promise.resolve(data)
+	},
 
-    // Default range for commits.
-    // This can include from/to git commit references
-    // and or after/before datestamps.
-    defaultRange: {
-      from: "origin/prod",
-      to: "origin/stage",
+	// Transform the changelog before posting to slack
+	//  content - The changelog content which was output by the command
+	//  data - The data which generated the changelog content.
+	transformForSlack: function (content, data) {
+		return Promise.resolve(content)
+	},
 
-      // symmetric='...'
-      // non-symmetric='..'
-      // https://matthew-brett.github.io/pydagogue/git_diff_dots.html
-      symmetric: false,
-    }
-  },
-
-  // Possible to hide "~ None ~" blocks in template if set to true
-  hideEmptyBlocks: false,
-
-  // Transforms the basic changelog data before it goes to the template.
-  //  data - The changelog data.
-  transformData: function(data) {
-    return Promise.resolve(data);
-  },
-
-  // Transform the changelog before posting to slack
-  //  content - The changelog content which was output by the command
-  //  data - The data which generated the changelog content.
-  transformForSlack: function(content, data) {
-    return Promise.resolve(content);
-  },
-
-  // The template that generates the output, as an ejs template.
-  // Learn more: http://ejs.co/
-  template:
-`<% if (jira.releaseVersions && jira.releaseVersions.length) {  %>
+	// The template that generates the output, as an ejs template.
+	// Learn more: http://ejs.co/
+	template: `<% if (jira.releaseVersions && jira.releaseVersions.length) {  %>
 Release version: <%= jira.releaseVersions[0].name -%>
 <% jira.releaseVersions.forEach((release) => { %>
   * <%= release.projectKey %>: <%= jira.baseUrl + '/projects/' + release.projectKey + '/versions/' + release.id -%>
@@ -154,4 +149,4 @@ Reverted
 <% }); -%>
 <% } -%>
 `
-};
+}

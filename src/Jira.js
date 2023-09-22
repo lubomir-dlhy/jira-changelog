@@ -239,10 +239,6 @@ export default class Jira {
 			return Promise.reject('Jira is not configured.')
 		}
 
-		if (this.slack.isEnabled()) {
-			await this.slack.getSlackUsers()
-		}
-
 		return this.jira.findIssue(ticketId).then(async (origTicket) => {
 			let ticket = Object.assign({}, origTicket)
 			if (origTicket.fields?.issuetype?.subtask) {
@@ -250,15 +246,7 @@ export default class Jira {
 					ticket = Object.assign({}, storyTicket)
 				})
 			}
-			if (!this.config.slack.api || !ticket.fields.reporter) return ticket
-
-			return this.slack
-				.findUser(ticket.fields.reporter.emailAddress, ticket.fields.reporter.displayName)
-				.then((slackUser) => {
-					ticket.slackUser = slackUser
-					return ticket
-				})
-				.catch(() => ticket)
+			return ticket
 		})
 	}
 

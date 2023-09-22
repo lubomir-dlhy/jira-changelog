@@ -51,9 +51,6 @@ export default class SourceControl {
 	 */
 	async getCommitLogs(workspaceDir, range) {
 		const workspace = git(workspaceDir)
-		if (this.slack.isEnabled()) {
-			await this.slack.getSlackUsers()
-		}
 
 		return new Promise((resolve, reject) => {
 			const opts = {
@@ -79,23 +76,7 @@ export default class SourceControl {
 				const graph = this.simpleTopLevelGraph(response.all)
 				const logs = this.consolodateCommitMessages(graph)
 
-				// Add slack users to commit logs
-				const promises = logs.map((log) => {
-					return this.slack
-						.findUser(log.authorEmail, log.authorName)
-						.catch((err) => {
-							console.log(err)
-						}) // ignore errors
-						.then((slackUser) => {
-							log.slackUser = slackUser
-							return log
-						})
-				})
-				promises.push(Promise.resolve())
-
-				Promise.all(promises).then(() => {
-					resolve(logs)
-				})
+				resolve(logs)
 			})
 		})
 	}

@@ -70,64 +70,6 @@ export default class Slack {
 	}
 
 	/**
-	 * Load all the slack users.
-	 *
-	 * @returns {Promise} Resolves to the user object list
-	 */
-	getSlackUsers() {
-		// No slack integration
-		if (!this.isEnabled()) {
-			return Promise.resolve([])
-		}
-
-		// Already loaded users
-		if (this.slackUsers) {
-			return Promise.resolve(this.slackUsers)
-		}
-
-		// Get users
-		return this.api('users.list').then((response) => {
-			if (!response || response.error) {
-				const err = response ? response.error : 'No response from server'
-				console.error('Could not load slack users:', err)
-				return Promise.reject(err)
-			}
-
-			this.slackUsers = response.members
-			return this.slackUsers
-		})
-	}
-
-	/**
-	 * Try to find a slack user by email and/or name
-	 *
-	 * @param {String} email - The email address to use to lookup the slack user.
-	 * @param {String} name - The full name to use to lookup the slack user.
-	 * @return {Promise} Resolves to the slack user object or undefined
-	 */
-	findUser(email, name) {
-		return this.getSlackUsers().then((users) => {
-			// Try by email first (more exact match)
-			email = email.toLowerCase()
-			let found = users.find((u) => u.profile.email && u.profile.email.toLowerCase() === email)
-
-			// Fallback to name
-			if (!found && name) {
-				name = name.toLowerCase()
-				found = users.find((u) => {
-					const profile = u.profile
-					return (
-						(profile.real_name && profile.real_name.toLowerCase() === name) ||
-						(profile.real_name_normalized && profile.real_name_normalized.toLowerCase() === name)
-					)
-				})
-			}
-
-			return found
-		})
-	}
-
-	/**
 	 * Post a message to a slack channel.
 	 * If the message is longer than slack's limit, it will be cut into multiple messages.
 	 *

@@ -89,21 +89,18 @@ test('Get all ticket reporters', () => {
 	const tickets = [
 		{
 			key: 'ENG-1234',
-			slackUser: 'zaSlack',
 			fields: {
 				reporter: { email: 'za@za.com', displayName: 'Za' }
 			}
 		},
 		{
 			key: 'ENG-234',
-			slackUser: 'zaSlack',
 			fields: {
 				reporter: { email: 'za@za.com', displayName: 'Za' }
 			}
 		},
 		{
 			key: 'ENG-345',
-			slackUser: 'tomsSlack',
 			fields: {
 				reporter: { email: 'tom@tom.com', displayName: 'Thomas' }
 			}
@@ -211,7 +208,6 @@ describe('Get pending tickets', () => {
 test('transform commit logs into template data', () => {
 	const createTicket = (key, reporter, status) => ({
 		key,
-		slackUser: reporter,
 		fields: {
 			issuetype: { name: 'Story' },
 			reporter: { email: reporter, displayName: reporter },

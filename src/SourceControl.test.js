@@ -1,7 +1,7 @@
 import SourceControl from './SourceControl'
 import { getDefaultConfig } from './Config'
 
-const source = new SourceControl(getDefaultConfig())
+const source = new SourceControl()
 
 /**
  * Test git log graph:

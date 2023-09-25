@@ -2,7 +2,6 @@ import 'core-js/stable'
 import 'regenerator-runtime/runtime'
 import JiraApi from 'jira-client'
 import PromiseThrottle from 'promise-throttle'
-import Slack from './Slack'
 
 const promiseThrottle = new PromiseThrottle({
 	requestsPerSecond: 10,
@@ -15,7 +14,6 @@ const promiseThrottle = new PromiseThrottle({
 export default class Jira {
 	constructor(config) {
 		this.config = config
-		this.slack = new Slack(config)
 		this.jira = undefined
 		this.releaseVersions = []
 		this.ticketPromises = {}
@@ -229,10 +227,9 @@ export default class Jira {
 
 	/**
 	 * Retreive the jira issue by ID.
-	 * Also attempt to match a slack user to the reporter's email address.
 	 *
 	 * @param {String} ticketId - The ticket ID of the issue to retrieve.
-	 * @return {Promise} Resolves a jira issue object, with added `slackUser` property.
+	 * @return {Promise} Resolves a jira issue object
 	 */
 	async getJiraIssue(ticketId) {
 		if (!this.jira) {

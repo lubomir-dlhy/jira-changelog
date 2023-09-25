@@ -53,7 +53,7 @@ async function runProgram() {
 		const config = readConfigFile(gitPath)
 		config.gitPath = gitPath
 		const jira = new Jira(config)
-		const source = new SourceControl(config)
+		const source = new SourceControl()
 
 		const range = await getRangeObject(config, options)
 

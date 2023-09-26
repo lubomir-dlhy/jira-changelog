@@ -89,7 +89,6 @@ export function getTicketReporters(tickets) {
 			reporters[email] = {
 				email,
 				name: displayName,
-				slackUser: ticket.slackUser,
 				tickets: [ticket]
 			}
 		} else {

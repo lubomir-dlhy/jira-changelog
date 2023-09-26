@@ -53,7 +53,7 @@ async function runProgram() {
 		const config = readConfigFile(gitPath)
 		config.gitPath = gitPath
 		const jira = new Jira(config)
-		const source = new SourceControl(config)
+		const source = new SourceControl()
 
 		const range = await getRangeObject(config, options)
 
@@ -193,12 +193,27 @@ async function getRangeObject(config, options) {
 
 	if (Object.keys(range).length < 2) {
 		const workspace = git(config.gitPath)
-		await workspace.tags((e, tags) => {
-			if (tags.all.length > 1) {
-				range.from = tags.all[tags.all.length - 2]
-				range.to = tags.all[tags.all.length - 1]
+
+		const { all: allTags } = await workspace.tags()
+
+		if (Object.keys(range).length === 1) {
+			const rangeFromTagIndex = range.from ? allTags.findIndex((item) => item === range.from) : null
+			const rangeToTagIndex = range.to ? allTags.findIndex((item) => item === range.to) : null
+
+			// Check if the next tag exists
+			if (range.from && rangeFromTagIndex + 1 < allTags.length) {
+				range.to = allTags[rangeFromTagIndex + 1]
 			}
-		})
+			// Check if the previous tag exists
+			if (range.to && rangeToTagIndex - 1 >= 0) {
+				range.from = allTags[rangeToTagIndex - 1]
+			}
+		} else {
+			if (allTags.length >= 2) {
+				range.from = allTags[allTags.length - 2]
+				range.to = allTags[allTags.length - 1]
+			}
+		}
 	}
 
 	if (!Object.keys(range).length) {

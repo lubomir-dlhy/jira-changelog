@@ -1,4 +1,3 @@
-import Slack from './Slack'
 import git from 'simple-git'
 
 /**
@@ -29,17 +28,12 @@ import git from 'simple-git'
  *   summary: <short commit message>,
  *   fullText: <full commit message>,
  *   authorName: <name of commit author>,
- *   authorEmail: <email of commit author>,
- *   slackUser: <object of slack user, as matched by authorEmail>
+ *   authorEmail: <email of commit author>
  * }
  * ```
  *
  */
 export default class SourceControl {
-	constructor(config) {
-		this.slack = new Slack(config)
-	}
-
 	/**
 	 * Return top-level commit logs for a range.
 	 * Commits which were the result of a merge are nested under `<log>.graph.merged`.

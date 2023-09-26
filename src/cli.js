@@ -200,11 +200,19 @@ async function getRangeObject(config, options) {
 			const rangeFromTagIndex = range.from ? allTags.findIndex((item) => item === range.from) : null
 			const rangeToTagIndex = range.to ? allTags.findIndex((item) => item === range.to) : null
 
-			range.from = range.from ? range.from : allTags[rangeToTagIndex - 1]
-			range.to = range.to ? range.to : allTags[rangeFromTagIndex + 1]
+			// Check if the next tag exists
+			if (range.from && rangeFromTagIndex + 1 < allTags.length) {
+				range.to = allTags[rangeFromTagIndex + 1]
+			}
+			// Check if the previous tag exists
+			if (range.to && rangeToTagIndex - 1 >= 0) {
+				range.from = allTags[rangeToTagIndex - 1]
+			}
 		} else {
-			range.from = allTags[allTags.length - 2]
-			range.to = allTags[allTags.length - 1]
+			if (allTags.length >= 2) {
+				range.from = allTags[allTags.length - 2]
+				range.to = allTags[allTags.length - 1]
+			}
 		}
 	}
 

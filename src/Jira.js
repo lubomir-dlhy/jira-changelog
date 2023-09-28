@@ -226,7 +226,8 @@ export default class Jira {
 	}
 
 	/**
-	 * Retreive the jira issue by ID.
+	 * Retrieve the jira issue by ID.
+	 * If the issue is sub-task or sub-bug, return parent task.
 	 *
 	 * @param {String} ticketId - The ticket ID of the issue to retrieve.
 	 * @return {Promise} Resolves a jira issue object
@@ -236,15 +237,12 @@ export default class Jira {
 			return Promise.reject('Jira is not configured.')
 		}
 
-		return this.jira.findIssue(ticketId).then(async (origTicket) => {
-			let ticket = Object.assign({}, origTicket)
-			if (origTicket.fields?.issuetype?.subtask) {
-				return this.jira.findIssue(origTicket.fields?.parent?.key).then((storyTicket) => {
-					ticket = Object.assign({}, storyTicket)
-				})
-			}
-			return ticket
-		})
+		let ticket = await this.jira.findIssue(ticketId)
+
+		if (ticket?.fields?.issuetype?.subtask) {
+			ticket = await this.jira.findIssue(ticket?.fields?.parent?.key)
+		}
+		return ticket
 	}
 
 	/**

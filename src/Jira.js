@@ -120,7 +120,10 @@ export default class Jira {
 
 		// Add jira tickets to log
 		const tickets = await Promise.all(promises)
-		log.tickets = tickets.filter((t) => t && this.includeTicket(t))
+
+		log.tickets = tickets
+			.flatMap((ticket) => (ticket?.fields?.issuetype?.subtask ? [ticket, ticket.fields.parent] : ticket))
+			.filter((t) => t && this.includeTicket(t))
 
 		return log
 	}
@@ -237,12 +240,7 @@ export default class Jira {
 			return Promise.reject('Jira is not configured.')
 		}
 
-		let ticket = await this.jira.findIssue(ticketId)
-
-		if (ticket?.fields?.issuetype?.subtask) {
-			ticket = await this.jira.findIssue(ticket?.fields?.parent?.key)
-		}
-		return ticket
+		return this.jira.findIssue(ticketId)
 	}
 
 	/**

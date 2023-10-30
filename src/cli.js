@@ -192,7 +192,7 @@ async function getRangeObject(config, options) {
 	}
 
 	if (Object.keys(range).length < 2) {
-		// versionsort.suffix puts base version (e.g. 1.0.0) after the suffix version (1.0.0-rc, 1.0.0-pre, ...)
+		// versionsort.suffix puts base version (e.g. 1.0.0) after the suffix version (1.0.0-pre, 1.0.0-rc, ..., 1.0.0)
 		const workspace = git({ baseDir: config.gitPath, config: ['versionsort.suffix=-'] })
 		const { all: allTags } = await workspace.tags(['--sort=v:refname'])
 
